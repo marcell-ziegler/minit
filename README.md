@@ -1,7 +1,7 @@
 # minit
-A collection of my personal init scripts for certain libraries and workflows written in python. Everything is implemented using [Click](https://github.com/pallets/click/).
+A collection of my personal init scripts for certain libraries and workflows written in C#. Everything is implemented using [System.CommandLine](https://github.com/dotnet/command-line-api).
 ## Installation
-Clone the repository to your disk and run `pip install .` in the terminal from the repo folder.
+Extract the most recent release zip anywhere and add it `PATH` if you wish
 
 # Supported commands
 ## Manim
