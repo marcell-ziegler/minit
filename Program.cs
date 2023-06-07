@@ -14,7 +14,7 @@ namespace minit
             "[tool.pyright]\n" +
             "reportWildcardImportFromLibrary = \"none\"";
 
-        static void Main(string[] args)
+        public static int Main(string[] args)
         {
             var rootCommand = new RootCommand();
 
@@ -26,7 +26,7 @@ namespace minit
             manimCommand.AddArgument(nameArgument);
             latexCommand.AddArgument(nameArgument);
 
-            var packageOption = new Option<string[]>(new string[] { "-p", "--packages" });
+            var packageOption = new Option<IEnumerable<string>>(new string[] { "-p", "--packages" });
             latexCommand.AddOption(packageOption);
             var classOption = new Option<string>(new string[] { "-c", "--class" });
             latexCommand.AddOption(classOption);
@@ -38,7 +38,7 @@ namespace minit
 
             latexCommand.SetHandler(InitLatex, nameArgument, packageOption, classOption);
 
-
+            return rootCommand.Invoke(args);
         }
 
         public static string Prompt(string prompt, string? @default=null)
@@ -130,19 +130,18 @@ namespace minit
 
             File.WriteAllText("main.py", mainFile.ToString());
 
-            File.WriteAllText("pyproject.tom", PYPROJECT_TOML_FILE);
+            File.WriteAllText("pyproject.toml", PYPROJECT_TOML_FILE);
 
-            Process startCode = new();
-            startCode.StartInfo = new ProcessStartInfo("code", ".");
-            startCode.Start();
+
+            Process.Start(new ProcessStartInfo() { FileName="code", UseShellExecute=true });
         }
         #endregion
 
         #region latex
-        public static void InitLatex(string name, string[]? packages, string? documentClass)
+        public static void InitLatex(string name, IEnumerable<string> packages, string? documentClass)
         {
             Console.WriteLine($"Project Name: {name}");
-            if (packages != null && packages.Length > 0)
+            if (packages != null && packages.Any())
             {
                 Console.WriteLine("Packages");
                 foreach (string package in packages)
