@@ -26,17 +26,21 @@ namespace minit
             manimCommand.AddArgument(nameArgument);
             latexCommand.AddArgument(nameArgument);
 
-            var packageOption = new Option<IEnumerable<string>>(new string[] { "-p", "--packages" });
+            var packageOption = new Option<List<string>>(new string[] { "-p", "--packages" });
             latexCommand.AddOption(packageOption);
-            var classOption = new Option<string>(new string[] { "-c", "--class" });
+            var classOption = new Option<string>(new[] { "-c", "--class" });
             latexCommand.AddOption(classOption);
+            var languageOption = new Option<string>(new[] { "-l", "--lang", "--language" });
+            latexCommand.AddOption(languageOption);
+            var bibOption = new Option<bool>(new[] { "-b", "--bib" });
+            latexCommand.AddOption(bibOption);
 
             rootCommand.AddCommand(manimCommand);
             rootCommand.AddCommand(latexCommand);
 
             manimCommand.SetHandler(InitManim, nameArgument);
 
-            latexCommand.SetHandler(InitLatex, nameArgument, packageOption, classOption);
+            latexCommand.SetHandler(InitLatex, nameArgument, packageOption, classOption, languageOption, bibOption);
 
             return rootCommand.Invoke(args);
         }
@@ -133,27 +137,59 @@ namespace minit
             File.WriteAllText("pyproject.toml", PYPROJECT_TOML_FILE);
 
 
-            Process.Start(new ProcessStartInfo() { FileName="code", UseShellExecute=true });
+            Process.Start(new ProcessStartInfo() { FileName="code", Arguments = ".", UseShellExecute=true });
         }
         #endregion
 
         #region latex
-        public static void InitLatex(string name, IEnumerable<string> packages, string? documentClass)
+        public static void InitLatex(string name, List<string> packages, string? documentClass, string? lang, bool bib)
         {
-            Console.WriteLine($"Project Name: {name}");
-            if (packages != null && packages.Any())
+            Directory.CreateDirectory(name);
+            Directory.SetCurrentDirectory(name);
+
+            var sb = new StringBuilder();
+            if (string.IsNullOrEmpty(lang)) { lang = "english"; }
+
+
+            sb.AppendLine("\\documentclass{" + (!string.IsNullOrEmpty(documentClass) ? documentClass : "article") + "}");
+            sb.AppendLine();
+
+            // biblatex
+            if (bib) 
             {
-                Console.WriteLine("Packages");
-                foreach (string package in packages)
-                {
-                    Console.WriteLine(package);
-                }
-            } else
+                sb.AppendLine("\\usepackage[backend=biber]{biblatex}");
+                File.Create("main.bib");
+            }
+            // Default packages
+            foreach (string package in new[] { "amsmath", "amssymb" })
             {
-                Console.WriteLine("No packages");
+                sb.AppendLine("\\usepackage{" + package + "}");
+            }
+            // Language dependent packages
+            foreach (string package in new[] {"babel", "cleveref", "varioref"})
+            {
+                sb.AppendLine($"\\usepackage[{lang}]" + "{" + package + "}");
             }
 
-            Console.WriteLine($"Class: {(!string.IsNullOrEmpty(documentClass) ? documentClass : "article")}");
+
+
+            if (packages.Any())
+            {
+                foreach (var package in packages)
+                {
+                    sb.AppendLine("\\usepackage{" + package + "}");
+                }
+            } else { sb.AppendLine(); }
+
+            sb.AppendLine();
+
+            sb.AppendLine("\\begin{document}");
+            sb.AppendLine("    ");
+            sb.AppendLine("\\end{document}");
+
+            File.WriteAllText("main.tex", sb.ToString());
+
+            Process.Start(new ProcessStartInfo() { FileName = "code", Arguments = ".", UseShellExecute = true });
         }
 
         #endregion
