@@ -166,7 +166,7 @@ namespace minit
                 sb.AppendLine("\\usepackage{" + package + "}");
             }
             // Language dependent packages
-            foreach (string package in new[] {"babel", "cleveref", "varioref"})
+            foreach (string package in new[] {"babel", "varioref", "cleveref"})
             {
                 sb.AppendLine($"\\usepackage[{lang}]" + "{" + package + "}");
             }
@@ -184,7 +184,7 @@ namespace minit
             sb.AppendLine();
 
             sb.AppendLine("\\begin{document}");
-            sb.AppendLine("    ");
+            sb.AppendLine("    Hello World!");
             sb.AppendLine("\\end{document}");
 
             File.WriteAllText("main.tex", sb.ToString());
