@@ -165,6 +165,11 @@ namespace minit
             {
                 sb.AppendLine("\\usepackage{" + package + "}");
             }
+
+            //hyperref
+            sb.AppendLine("\\usepackage{hyperref}");
+            sb.Append("\\hypersetup{\r\n    colorlinks=true,\r\n    linkcolor=black,\r\n    citecolor=black,\r\n    urlcolor=black\r\n}\r\n");
+
             // Language dependent packages
             foreach (string package in new[] {"babel", "varioref", "cleveref"})
             {
