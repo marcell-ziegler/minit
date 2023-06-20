@@ -8,7 +8,7 @@ namespace minit
 {
     internal class Program
     {
-        private static readonly string PYPROJECT_TOML_FILE = 
+        private static readonly string MANIM_PYPROJECT_TOML_FILE = 
             "[tool.pylama]\n" +
             "ignore = \"W0401\"\n" +
             "[tool.pyright]\n" +
@@ -22,9 +22,13 @@ namespace minit
 
             var latexCommand = new Command("latex");
 
+            var pythonCommand = new Command("python");
+
             var nameArgument = new Argument<string>("name");
             manimCommand.AddArgument(nameArgument);
             latexCommand.AddArgument(nameArgument);
+            pythonCommand.AddArgument(nameArgument);
+
 
             var packageOption = new Option<List<string>>(new string[] { "-p", "--packages" });
             latexCommand.AddOption(packageOption);
@@ -37,10 +41,13 @@ namespace minit
 
             rootCommand.AddCommand(manimCommand);
             rootCommand.AddCommand(latexCommand);
+            rootCommand.AddCommand(pythonCommand);
 
             manimCommand.SetHandler(InitManim, nameArgument);
 
             latexCommand.SetHandler(InitLatex, nameArgument, packageOption, classOption, languageOption, bibOption);
+
+            pythonCommand.SetHandler(InitPython, nameArgument);
 
             return rootCommand.Invoke(args);
         }
@@ -134,10 +141,12 @@ namespace minit
 
             File.WriteAllText("main.py", mainFile.ToString());
 
-            File.WriteAllText("pyproject.toml", PYPROJECT_TOML_FILE);
+            File.WriteAllText("pyproject.toml", MANIM_PYPROJECT_TOML_FILE);
 
 
             Process.Start(new ProcessStartInfo() { FileName="code", Arguments = ".", UseShellExecute=true });
+            Thread.Sleep(1000);
+            Environment.Exit(0);
         }
         #endregion
 
@@ -195,10 +204,27 @@ namespace minit
             File.WriteAllText("main.tex", sb.ToString());
 
             Process.Start(new ProcessStartInfo() { FileName = "code", Arguments = ".", UseShellExecute = true });
+            Thread.Sleep(1000);
+            Environment.Exit(0);
         }
 
         #endregion
 
+        #region python
+
+        public static void InitPython(string name)
+        {
+            Directory.CreateDirectory(name);
+            Directory.SetCurrentDirectory(name);
+
+            File.Create("main.py");
+            
+            Process.Start(new ProcessStartInfo() { FileName = "code", Arguments = ".", UseShellExecute = true });
+            Thread.Sleep(1000);
+            Environment.Exit(0);
+        }
+
+        #endregion
 
 
     }
